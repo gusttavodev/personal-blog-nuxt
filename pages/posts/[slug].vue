@@ -1,9 +1,8 @@
 <template>
-<div class="unreset" >
-  <p>{{ $route.params.slug }}</p>
-  <ContentRenderer :value="data" />
-</div>
-
+  <div class="unreset">
+    <p>{{ $route.params.slug }}</p>
+    <ContentRenderer :value="data" />
+  </div>
 </template>
 
 <script setup>

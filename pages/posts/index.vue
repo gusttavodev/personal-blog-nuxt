@@ -23,14 +23,17 @@
       </div>
       <div class="mt-12 grid gap-16 pt-12 lg:grid-cols-3 lg:gap-x-5 lg:gap-y-12">
         <div v-for="post in posts" :key="post.title">
-          <div>
-            <a :href="post.category.href" class="inline-block">
-              <span :class="[post.category.color, 'inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium']">
-                {{ post.category.name }}
-              </span>
-            </a>
+          <div class="flex gap-3">
+            <div v-for="category in post.categories" :key="category.name">
+              <a :href="category.href" class="inline-block">
+                <span :class="[category.color, 'inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium']">
+                  {{ category.name }}
+                </span>
+              </a>
+            </div>
           </div>
-          <a :href="post.href" class="block mt-4">
+
+          <a :href="post.path" class="block mt-4">
             <p class="text-xl font-semibold text-gray-900">
               {{ post.title }}
             </p>
@@ -40,23 +43,23 @@
           </a>
           <div class="mt-6 flex items-center">
             <div class="flex-shrink-0">
-              <a :href="post.author.href">
-                <span class="sr-only">{{ post.author.name }}</span>
-                <img class="h-10 w-10 rounded-full" :src="post.author.imageUrl" alt="">
+              <a>
+                <span class="sr-only">{{ post.profiles.username }}</span>
+                <img class="h-10 w-10 rounded-full" :src="post.profiles.avatar_url" alt="">
               </a>
             </div>
             <div class="ml-3">
               <p class="text-sm font-medium text-gray-900">
-                <a :href="post.author.href">
-                  {{ post.author.name }}
+                <a>
+                  {{ post.profiles.username }}
                 </a>
               </p>
               <div class="flex space-x-1 text-sm text-gray-500">
-                <time :datetime="post.datetime">
-                  {{ post.date }}
+                <time :datetime="post.created_at">
+                 {{ new Date(post.created_at).toLocaleDateString() }}
                 </time>
                 <span aria-hidden="true"> &middot; </span>
-                <span> {{ post.readingTime }} read </span>
+                <span> {{ post.read_time }} minutos </span>
               </div>
             </div>
           </div>
@@ -66,9 +69,13 @@
   </div>
 </template>
 
-<script setup>
-const user = useSupabaseUser()
-const { auth } = useSupabaseClient()
+<script setup lang="ts">
+import type { Ref } from 'vue'
+import { Post } from '~/types/post'
+import { User } from '@supabase/supabase-js'
+
+const user: Ref<User> = useSupabaseUser()
+const client = useSupabaseClient()
 
 watchEffect(() => {
   if (user.value?.id == null) {
@@ -76,53 +83,37 @@ watchEffect(() => {
   }
 })
 
-const posts = [
-  {
-    title: 'Boost your conversion rate',
-    href: '#',
-    category: { name: 'Article', href: '#', color: 'bg-indigo-100 text-indigo-800' },
-    description:
-      'Nullam risus blandit ac aliquam justo ipsum. Quam mauris volutpat massa dictumst amet. Sapien tortor lacus arcu.',
-    date: 'Mar 16, 2020',
-    datetime: '2020-03-16',
-    author: {
-      name: 'Paul York',
-      href: '#',
-      imageUrl:
-        'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
-    },
-    readingTime: '6 min'
-  },
-  {
-    title: 'How to use search engine optimization to drive sales',
-    href: '#',
-    category: { name: 'Video', href: '#', color: 'bg-pink-100 text-pink-800' },
-    description:
-      'Nullam risus blandit ac aliquam justo ipsum. Quam mauris volutpat massa dictumst amet. Sapien tortor lacus arcu.',
-    date: 'Mar 10, 2020',
-    datetime: '2020-03-10',
-    author: {
-      name: 'Dessie Ryan',
-      href: '#',
-      imageUrl:
-        'https://images.unsplash.com/photo-1550525811-e5869dd03032?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
-    },
-    readingTime: '4 min'
-  },
-  {
-    title: 'Improve your customer experience',
-    href: '#',
-    category: { name: 'Case Study', href: '#', color: 'bg-green-100 text-green-800' },
-    description: 'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ab iure iusto fugiat commodi sequi.',
-    date: 'Feb 12, 2020',
-    datetime: '2020-02-12',
-    author: {
-      name: 'Easer Collins',
-      href: '#',
-      imageUrl:
-        'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
-    },
-    readingTime: '11 min'
-  }
-]
+const { data: posts } = await useAsyncData('posts', async () => {
+  const { data } = await client.from<Post>('posts')
+    .select(
+      'id, title, description, path, read_time, categories, created_at, profiles(username, avatar_url)'
+    )
+    .eq('user', user.value.id)
+    .order('created_at')
+  return data
+})
+console.log("teste => ", posts.value)
+
+// const posts = [
+//   {
+//     title: 'Boost your conversion rate',
+//     href: '#',
+//     categories: [
+//       { name: 'PHP', href: '#', color: 'bg-blue-100 text-blue-800' },
+//       { name: 'LARAVEL', href: '#', color: 'bg-orange-100 text-orange-800' },
+//       { name: 'VUE', href: '#', color: 'bg-green-100 text-green-800' }
+//     ],
+//     description:
+//       'Nullam risus blandit ac aliquam justo ipsum. Quam mauris volutpat massa dictumst amet. Sapien tortor lacus arcu.',
+//     date: 'Mar 16, 2020',
+//     datetime: '2020-03-16',
+//     author: {
+//       name: 'Paul York',
+//       href: '#',
+//       imageUrl:
+//         'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
+//     },
+//     readingTime: '6 min'
+//   }
+// ]
 </script>
