@@ -56,7 +56,7 @@
               </p>
               <div class="flex space-x-1 text-sm text-gray-500">
                 <time :datetime="post.created_at">
-                 {{ new Date(post.created_at).toLocaleDateString() }}
+                  {{ new Date(post.created_at).toLocaleDateString() }}
                 </time>
                 <span aria-hidden="true"> &middot; </span>
                 <span> {{ post.read_time }} minutos </span>
@@ -71,8 +71,8 @@
 
 <script setup lang="ts">
 import type { Ref } from 'vue'
-import { Post } from '~/types/post'
 import { User } from '@supabase/supabase-js'
+import { Post } from '~/types/post'
 
 const user: Ref<User> = useSupabaseUser()
 const client = useSupabaseClient()
@@ -92,28 +92,5 @@ const { data: posts } = await useAsyncData('posts', async () => {
     .order('created_at')
   return data
 })
-console.log("teste => ", posts.value)
 
-// const posts = [
-//   {
-//     title: 'Boost your conversion rate',
-//     href: '#',
-//     categories: [
-//       { name: 'PHP', href: '#', color: 'bg-blue-100 text-blue-800' },
-//       { name: 'LARAVEL', href: '#', color: 'bg-orange-100 text-orange-800' },
-//       { name: 'VUE', href: '#', color: 'bg-green-100 text-green-800' }
-//     ],
-//     description:
-//       'Nullam risus blandit ac aliquam justo ipsum. Quam mauris volutpat massa dictumst amet. Sapien tortor lacus arcu.',
-//     date: 'Mar 16, 2020',
-//     datetime: '2020-03-16',
-//     author: {
-//       name: 'Paul York',
-//       href: '#',
-//       imageUrl:
-//         'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
-//     },
-//     readingTime: '6 min'
-//   }
-// ]
 </script>

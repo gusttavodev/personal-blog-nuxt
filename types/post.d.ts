@@ -7,13 +7,14 @@ export interface Profile {
 }
 
 export interface Post {
-  id: number
+  id?: number
   title: string,
   description: string,
   read_time: string
   path: string
-  categories: array<object>
-  profiles: Profile
-  created_at: string
-  user: string
+  categories?: array<object>
+  created_at?: string
+  user?: string
+
+  profiles?: Profile
 }
