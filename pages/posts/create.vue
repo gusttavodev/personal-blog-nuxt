@@ -1,74 +1,46 @@
 <!-- This example requires Tailwind CSS v2.0+ -->
 <template>
-  <div class="bg-white pt-16 pb-20 px-4 sm:px-6 lg:pt-24 lg:pb-28 lg:px-8">
-    <div class="relative max-w-lg mx-auto divide-y-2 divide-gray-200 lg:max-w-7xl">
-      <button
-        type="button"
-        class="
-          flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md
-          shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2
-          focus:ring-offset-2 focus:ring-indigo-500 my-5
-        "
-        @click="auth.signOut()"
-      >
-        Sair
-      </button>
-      <div>
-        <h2 class="text-3xl tracking-tight font-extrabold text-gray-900 sm:text-4xl">
-          Ultimas publicações
-        </h2>
-        <p class="mt-3 text-xl text-gray-500 sm:mt-4">
-          Seja bem vindo ao meu blog, aqui falo sobre Tech, Vida, Cripto e Magick.
-        </p>
-      </div>
-      <div class="mt-12 grid gap-16 pt-12 lg:grid-cols-3 lg:gap-x-5 lg:gap-y-12">
-        <div v-for="post in posts" :key="post.title">
-          <div>
-            <a :href="post.category.href" class="inline-block">
-              <span :class="[post.category.color, 'inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium']">
-                {{ post.category.name }}
-              </span>
-            </a>
-          </div>
-          <a :href="post.href" class="block mt-4">
-            <p class="text-xl font-semibold text-gray-900">
-              {{ post.title }}
-            </p>
-            <p class="mt-3 text-base text-gray-500">
-              {{ post.description }}
-            </p>
-          </a>
-          <div class="mt-6 flex items-center">
-            <div class="flex-shrink-0">
-              <a :href="post.author.href">
-                <span class="sr-only">{{ post.author.name }}</span>
-                <img class="h-10 w-10 rounded-full" :src="post.author.imageUrl" alt="">
-              </a>
-            </div>
-            <div class="ml-3">
-              <p class="text-sm font-medium text-gray-900">
-                <a :href="post.author.href">
-                  {{ post.author.name }}
-                </a>
-              </p>
-              <div class="flex space-x-1 text-sm text-gray-500">
-                <time :datetime="post.datetime">
-                  {{ post.date }}
-                </time>
-                <span aria-hidden="true"> &middot; </span>
-                <span> {{ post.readingTime }} read </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div id="my-item" />
+  <button @click="onSend">
+    Envie se form
+  </button>
 </template>
 
 <script setup>
+import { onMounted, ref } from 'vue'
 const user = useSupabaseUser()
 const { auth } = useSupabaseClient()
+const textEditor = ref()
+
+useHead({
+  title: 'Account',
+  script: [
+    { src: 'https://cdn.quilljs.com/1.3.6/quill.js' },
+    { src: 'https://cdn.quilljs.com/1.3.6/quill.min.js' },
+    { src: 'https://cdn.jsdelivr.net/npm/quilljs-markdown@latest/dist/quilljs-markdown.js' }
+  ],
+  link: [
+    { rel: 'stylesheet', href: 'https://cdn.quilljs.com/1.3.6/quill.snow.css' },
+    { rel: 'stylesheet', href: 'https://cdn.quilljs.com/1.3.6/quill.bubble.css' },
+
+    { rel: 'stylesheet', href: 'https://cdn.jsdelivr.net/npm/quilljs-markdown@latest/dist/quilljs-markdown-common-style.css' }
+  ]
+})
+
+onMounted(() => {
+  const options = {
+    placeholder: 'Escreva o seu post...',
+    readOnly: false,
+    theme: 'snow'
+  }
+  textEditor.value = new Quill('#my-item', options)
+  new QuillMarkdown(textEditor.value)
+  // textEditor.value = new SimpleMDE({ element: document.getElementById('my-item') })
+})
+
+const onSend = () => {
+  console.log('textEditor => ', textEditor.value)
+}
 
 watchEffect(() => {
   if (user.value?.id == null) {
@@ -80,7 +52,7 @@ const posts = [
   {
     title: 'Boost your conversion rate',
     href: '#',
-    category: { name: 'Article', href: '#', color: 'bg-indigo-100 text-indigo-800' },
+    category: { name: 'Article', href: '#', color: 'bg-orange-100 text-orange-800' },
     description:
       'Nullam risus blandit ac aliquam justo ipsum. Quam mauris volutpat massa dictumst amet. Sapien tortor lacus arcu.',
     date: 'Mar 16, 2020',
@@ -96,7 +68,7 @@ const posts = [
   {
     title: 'How to use search engine optimization to drive sales',
     href: '#',
-    category: { name: 'Video', href: '#', color: 'bg-pink-100 text-pink-800' },
+    category: { name: 'Video', href: '#', color: 'bg-blue-100 text-blue-800' },
     description:
       'Nullam risus blandit ac aliquam justo ipsum. Quam mauris volutpat massa dictumst amet. Sapien tortor lacus arcu.',
     date: 'Mar 10, 2020',

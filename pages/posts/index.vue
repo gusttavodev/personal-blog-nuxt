@@ -1,6 +1,8 @@
 <!-- This example requires Tailwind CSS v2.0+ -->
 <template>
-  <div class="bg-white pt-16 pb-20 px-4 sm:px-6 lg:pt-24 lg:pb-28 lg:px-8">
+  <NuxtLayout :name="layout">
+  <template #content>
+     <div class="bg-white pt-16 pb-20 px-4 sm:px-6 lg:pt-24 lg:pb-28 lg:px-8">
     <div class="relative max-w-lg mx-auto divide-y-2 divide-gray-200 lg:max-w-7xl">
       <button
         type="button"
@@ -33,7 +35,7 @@
             </div>
           </div>
 
-          <a :href="post.path" class="block mt-4">
+          <a :href="`posts/${post.path}`" class="block mt-4">
             <p class="text-xl font-semibold text-gray-900">
               {{ post.title }}
             </p>
@@ -67,6 +69,9 @@
       </div>
     </div>
   </div>
+  </template>
+  </NuxtLayout>
+
 </template>
 
 <script setup lang="ts">
@@ -74,8 +79,13 @@ import type { Ref } from 'vue'
 import { User } from '@supabase/supabase-js'
 import { Post } from '~/types/post'
 
+definePageMeta({
+  layout: 'base'
+})
+
 const user: Ref<User> = useSupabaseUser()
 const client = useSupabaseClient()
+
 
 watchEffect(() => {
   if (user.value?.id == null) {

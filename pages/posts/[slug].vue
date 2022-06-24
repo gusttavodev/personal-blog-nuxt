@@ -1,16 +1,71 @@
 <template>
-  <div class="unreset">
-    <p>{{ $route.params.slug }}</p>
-    <ContentRenderer :value="data" />
-  </div>
+  <NuxtLayout :name="layout">
+    <template #header>
+         <div class="mt-6 flex items-center">
+            <div class="flex-shrink-0">
+              <a>
+                <span class="sr-only">{{ posts?.profiles.username }}</span>
+                <img class="h-10 w-10 rounded-full" :src="posts?.profiles.avatar_url" alt="">
+              </a>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-gray-900">
+                <a>
+                  {{ posts?.profiles.username }}
+                </a>
+              </p>
+              <div class="flex space-x-1 text-sm text-gray-500">
+                <time :datetime="posts?.created_at">
+                  {{ new Date(posts?.created_at).toLocaleDateString() }}
+                </time>
+                <span aria-hidden="true"> &middot; </span>
+                <span> {{ posts?.read_time }} minutos </span>
+              </div>
+            </div>
+          </div>
+    </template>
+    <template #content>
+      <div class="unreset">
+        <ContentRenderer :value="data" />
+      </div>
+    </template>
+  </NuxtLayout>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import type { Ref } from 'vue'
+import { User } from '@supabase/supabase-js'
+import { Post } from '~/types/post'
+
+definePageMeta({
+  layout: 'base'
+})
 
 const route = useRoute()
 const postName = `articles/${route.params.slug}`
 const { data } = await useAsyncData(postName, () => queryContent(postName).findOne())
 
+const user: Ref<User> = useSupabaseUser()
+const client = useSupabaseClient()
+
+watchEffect(() => {
+  if (user.value?.id == null) {
+    navigateTo('/')
+  }
+})
+
+const { data: posts } = await useAsyncData('posts', async () => {
+  const { data } = await client.from('posts')
+    .select(
+      'id, title, description, path, read_time, categories, created_at, profiles(username, avatar_url)'
+    )
+    .eq('user', user.value.id)
+    .eq('path', route.params.slug)
+    .limit(1)
+    .single()
+  return data
+})
+console.log("Tivemos a data +> ", posts)
 </script>
 <!-- # Import at separate CSS -->
 <style>
